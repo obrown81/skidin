@@ -3,30 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Allow PWA full‑screen on iOS & Android -->
+  <!-- Allow full‑screen when saved to home screen -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
   <title>🎿 DIN Calculator</title>
   <meta name="theme-color" content="#111418" />
   <style>
-    :root{
-      --bg:#111418;
-      --panel:#1d2127;
-      --panel-alt:#262b31;
-      --text:#dfe3ea;
-      --text-soft:#a3a9b6;
-      --accent:#1992ff;
-      --radius:14px;
-      --shadow:0 6px 24px rgba(0,0,0,.25);
-      /* green result box palette */
-      --result-bg:#1f6d2b;
-      --result-border:#28a745;
-      --result-text:#e6ffef;
-    }
+    :root{--bg:#111418;--panel:#1d2127;--panel-alt:#262b31;--text:#dfe3ea;--text-soft:#a3a9b6;--accent:#1992ff;--radius:14px;--shadow:0 6px 24px rgba(0,0,0,.25);--result-bg:#1f6d2b;--result-border:#28a745;--result-text:#e6ffef}
     *{box-sizing:border-box;margin:0;font-family:system-ui,-apple-system,"Inter",Helvetica,Arial,sans-serif}
     body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:2rem}
-    h1{text-align:center;font-size:1.75rem;margin-bottom:1rem;background:var(--accent);color:#e6f3ff;border-radius:var(--radius);padding:.5rem 1rem;max-width:400px;width:100%;box-shadow:var(--shadow);}
+    h1{text-align:center;font-size:1.75rem;margin-bottom:1rem;background:var(--accent);color:#e6f3ff;border-radius:var(--radius);padding:.5rem 1rem;max-width:400px;width:100%;box-shadow:var(--shadow)}
     form{background:var(--panel);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);max-width:400px;width:100%;display:grid;gap:.9rem}
     label{font-weight:600;color:var(--text-soft);margin-bottom:.25rem;font-size:.85rem}
     input[type=number],select{width:100%;background:var(--panel-alt);border:1px solid rgba(0,0,0,.25);border-radius:8px;padding:.55rem .8rem;font-size:.95rem;color:var(--text)}
@@ -52,7 +39,12 @@
 
   <div><label>Boot‑sole length (mm)<input id="bsl" type="number" min="80" required></label></div>
 
-  <div><label>Skier Type<select id="sType"><option value="1-">Type 1‑ (very cautious)</option><option value="1">Type 1</option><option value="2" selected>Type 2</option><option value="3">Type 3</option><option value="3+">Type 3+</option></select></label></div>
+  <div><label>Skier Type<select id="sType">
+    <option value="1-">Type&nbsp;1‑ (Very cautious)</option>
+    <option value="1">Type&nbsp;1 (Cautious)</option>
+    <option value="2" selected>Type&nbsp;2 (Moderate)</option>
+    <option value="3">Type&nbsp;3 (Aggressive)</option>
+    <option value="3+">Type&nbsp;3+ (Expert/Racer)</option></select></label></div>
 </form>
 <div id="result">Fill in your details…</div>
 
@@ -64,20 +56,12 @@ const table={A:[.75,.75,null,null,null,null],B:[1,1,.75,null,null,null],C:[1.25,
 const order=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
 const offset={'1-':-1,'1':0,'2':1,'3':2,'3+':3};
 const $=id=>document.getElementById(id);
-
-// ---------------- helpers ----------------
 function kg(){const u=$('wUnit').value;if(u==='kg')return +$('w').value||0;if(u==='lb')return (+$('w').value||0)*0.453592;return ((+$('st').value||0)*14+(+$('lb').value||0))*0.453592;}
 function cm(){const u=$('hUnit').value;if(u==='cm')return +$('h').value||0;return ((+$('ft').value||0)*12+(+$('inch').value||0))*2.54;}
 const findCode=(v,list)=>list.find(r=>v>=(r.min||0)&&v<=r.max)?.c;
 const col=b=>b<=250?0:b<=270?1:b<=290?2:b<=310?3:b<=330?4:5;
-
-function visibility(){const stSel=$('wUnit').value==='stlb';$('weightVal').style.display=stSel?'none':'';$('stGrp').style.display=stSel?'' :'none';$('poundsGrp').style.display=stSel?'' :'none';const ftSel=$('hUnit').value==='ftin';$('hVal').style.display=ftSel?'none':'';$('ftGrp').style.display=ftSel?'' :'none';$('inGrp').style.display=ftSel?'' :'none';}
-
+function showInputs(){const stSel=$('wUnit').value==='stlb';$('weightVal').style.display=stSel?'none':'';$('stGrp').style.display=stSel?'' :'none';$('poundsGrp').style.display=stSel?'' :'none';const ftSel=$('hUnit').value==='ftin';$('hVal').style.display=ftSel?'none':'';$('ftGrp').style.display=ftSel?'' :'none';$('inGrp').style.display=ftSel?'' :'none';}
 function computeDIN(){const w=kg(),h=cm(),b=+$('bsl').value||0,age=+$('age').value||0;if(!(w&&h&&b&&age))return'';const wc=findCode(w,wCode),hc=findCode(h,hCode);if(!wc&&!hc)return'out';let idx=Math.min(...[wc,hc].filter(Boolean).map(c=>order.indexOf(c)));idx+=offset[$('sType').value];if(age<10||age>=50)idx--;idx=Math.max(0,Math.min(idx,order.length-1));const d=table[order[idx]][col(b)];return d==null?'out':d;}
-
-function update(){visibility();const r=computeDIN();$('result').textContent=r===''?'Fill in all required fields…':r==='out'?'Combo outside chart – consult a tech.':`Recommended DIN: ${r}`;}
-
-document.addEventListener('DOMContentLoaded',()=>{update();document.querySelectorAll('#form input,#form select').forEach(e=>{e.addEventListener('input',update);e.addEventListener('change',update);});});
+function update(){showInputs();const r=computeDIN();$('result').textContent=r===''?'Fill in all required fields…':r==='out'?'Combo outside chart – consult a tech.':`Recommended DIN: ${r}`;}
+window.addEventListener('DOMContentLoaded',()=>{update();document.querySelectorAll('#form input,#form select').forEach(el=>el.addEventListener('input',update));document.querySelectorAll('#form select').forEach(el=>el.addEventListener('change',update));});
 </script>
-</body>
-</html>
