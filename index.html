@@ -43,7 +43,13 @@
 
   <div><label for="bsl">Boot‑sole length (mm)</label><input id="bsl" type="number" inputmode="numeric" pattern="[0-9]*" min="80" required></div>
   <div><label for="sType">Skier Type</label>
-    <select id="sType"><option value="1-">Type 1‑ (Very cautious)</option><option value="1">Type 1</option><option value="2" selected>Type 2</option><option value="3">Type 3</option><option value="3+">Type 3+</option></select></div>
+    <select id="sType">
+        <option value="1-">Type 1‑ (Very cautious)</option>
+        <option value="1">Type 1 (Cautious)</option>
+        <option value="2" selected>Type 2 (Moderate)</option>
+        <option value="3">Type 3 (Aggressive)</option>
+        <option value="3+">Type 3+ (Expert/Racer)</option>
+      </select></div>
 </form>
 <div id="result">Fill in your details…</div>
 
