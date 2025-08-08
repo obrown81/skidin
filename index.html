@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>DIN Calculator — Ski-Pass Cards</title>
+  <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Compact iPhone layout." />
 
   <!-- iOS fullscreen & icon -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,70 +14,83 @@
   <meta name="theme-color" content="#10b981">
   <link rel="manifest" href="site.webmanifest">
 
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>DIN Calculator — Ski-Pass Cards</title>
-  <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Defaults set to UK male averages (approx age 30)." />
   <style>
     /* ===== iOS: avoid zoom-on-focus & improve touch ===== */
     html { -webkit-text-size-adjust: 100%; }
     body { -webkit-tap-highlight-color: rgba(0,0,0,0); }
-    /* Force >=16px font-size on inputs to stop iOS Safari zoom */
+    /* Prevent iOS Safari zoom: keep >=16px */
     input, select, textarea { font-size: 16px; line-height: 1.35; }
     /* Comfortable touch targets */
-    input, select, button { min-height: 48px; }
+    input, select, button { min-height: 44px; }
 
     :root{
-      --bg:#f8fafc;
-      --text:#0f172a;
-      --card:#ffffff;
-      --border:#e5e7eb;
-      --field-border:#cbd5e1;
-      --accent-gold:#f59e0b;
-      --accent-blue:#60a5fa;
-      --accent-green:#10b981;
-      --result-green:#16a34a;
-      --muted:#475569;
+      --bg:#f8fafc; --text:#0f172a; --card:#ffffff;
+      --border:#e5e7eb; --field-border:#cbd5e1;
+      --accent-gold:#f59e0b; --accent-blue:#60a5fa; --accent-green:#10b981;
+      --result-green:#16a34a; --muted:#475569;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
+      min-height:100dvh; /* dynamic viewport for iOS */
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
       background:var(--bg);
       color:var(--text);
     }
-    .wrap{max-width:920px;margin:0 auto;padding:20px;display:grid;gap:16px}
-    h1{text-align:center;font-size:26px;font-weight:800;letter-spacing:.3px;margin:6px 0 14px}
-    .pass{position:relative;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:12px}
-    .strap{height:6px;border-radius:8px;margin-bottom:8px}
-    .title{display:flex;justify-content:space-between;align-items:center;color:#334155;font-weight:700;letter-spacing:.6px}
-    .perf{height:10px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:8px 8px;background-position:0 -2px;opacity:.75}
-    .fields{display:flex;flex-direction:column;gap:10px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+      padding:12px 12px 10px;
+      display:grid;
+      gap:10px;
+    }
+    h1{
+      text-align:center;
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:.2px;
+      margin:2px 0 4px;
+    }
+    .pass{
+      position:relative;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.05);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .strap{height:5px;border-radius:8px;margin-bottom:6px}
+    .title{display:flex;justify-content:space-between;align-items:center;color:#334155;font-weight:700;letter-spacing:.4px;font-size:13px}
+    .perf{height:6px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:8px 8px;background-position:0 -2px;opacity:.7}
+    .fields{display:flex;flex-direction:column;gap:8px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     select,input{
-      padding:12px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%;
+      padding:10px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%;
     }
     select:focus,input:focus{outline:3px solid #bae6fd; outline-offset: 1px;}
     .result{
-      background:var(--result-green);
-      color:#fff;
-      text-align:center;
-      border-radius:14px;
-      padding:22px;
+      background:var(--result-green); color:#fff; text-align:center; border-radius:12px; padding:16px;
     }
-    .result h3{margin:0 0 6px;font-size:14px;font-weight:800;letter-spacing:.4px;opacity:.95}
-    .result .value{font-size:56px;line-height:1;font-weight:900}
-    .note{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
-
-    /* Sticky DIN on small screens for better feedback */
-    .sticky-wrap{position:sticky; bottom:12px; z-index:5}
-
-    footer{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 30px}
-    a{color:#0ea5e9;text-decoration:none} a:hover{text-decoration:underline}
-    @media (max-width:640px){
-      .grid2{grid-template-columns:1fr}
-      .result .value{font-size:44px}
-      .wrap{padding:14px; gap:12px}
+    .result h3{margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.3px;opacity:.95}
+    .result .value{font-size:40px;line-height:1;font-weight:900}
+    /* Make it fit without scrolling on common iPhones */
+    @media (max-width: 420px) {
+      .wrap{gap:8px;padding:8px}
+      .pass{padding:10px;border-radius:14px}
+      .strap{height:4px;margin-bottom:6px}
+      .fields{gap:6px}
+      .grid2{gap:6px}
+      h1{font-size:20px;margin:2px 0 2px}
+      .result{padding:14px}
+      .result .value{font-size:36px}
+    }
+    /* If very short viewport (e.g., with keyboard toolbar), tighten further */
+    @media (max-height: 740px) {
+      .wrap{gap:8px}
+      .result .value{font-size:34px}
     }
   </style>
 </head>
@@ -118,7 +135,7 @@
       <div class="fields">
         <div class="grid2">
           <input id="bsl" inputmode="numeric" pattern="[0-9]*" placeholder="Boot-sole length (mm)" aria-label="Boot-sole length (mm)">
-          <input id="age" inputmode="numeric" pattern="[0-9]*" placeholder="Age" aria-label="Age">
+          <input id="age" inputmode="numeric" pattern="[0-9]*" value="30" placeholder="Age" aria-label="Age">
         </div>
         <select id="skierType" aria-label="Skier Type">
           <option value="0">Type 0 — Very cautious / child</option>
@@ -128,11 +145,10 @@
           <option value="3+">Type 3+ — Expert / race</option>
         </select>
       </div>
-      <div class="note">Defaults use UK male averages (2019): 85.4 kg, 175.5 cm. Auto-updates as you type.</div>
     </section>
 
-    <!-- Result (sticky wrapper improves mobile feedback) -->
-    <section class="pass sticky-wrap">
+    <!-- Result -->
+    <section class="pass">
       <div class="strap" style="background:var(--accent-green)"></div>
       <div class="title"><span>RESULT</span></div>
       <div class="perf"></div>
@@ -143,10 +159,6 @@
         </div>
       </div>
     </section>
-
-    <footer>
-      MIT © You • Chart logic adapted to match Salomon/ISO-11088 ranges. Defaults: 85.4 kg, 175.5 cm, age 30.
-    </footer>
   </div>
 
   <script>
@@ -198,10 +210,10 @@
     const resultBox = document.getElementById('resultBox');
     const dinValue = document.getElementById('dinValue');
 
-    // ===== Inputs state (shadow model) =====
+    // ===== Inputs state =====
     const state = {
-      wUnit:'kg', kg:'85.4', lb:'', st:'', stlb:'',
-      hUnit:'cm', cm:'175.5', ft:'', inch:'',
+      wUnit:'kg', kg:'', lb:'', st:'', stlb:'',
+      hUnit:'cm', cm:'', ft:'', inch:'',
     };
 
     function renderWeightFields(){
@@ -285,12 +297,12 @@
     // Initial renders
     renderWeightFields(); renderHeightFields();
 
-    // Hook misc inputs
+    // Inputs
     bsl.addEventListener('input', recalc);
     age.addEventListener('input', recalc);
     skierType.addEventListener('change', recalc);
 
-    // ===== Recalc =====
+    // Recalc
     function recalc(){
       const w = kgOf(state.wUnit, state.kg, state.lb, state.st, state.stlb);
       const h = cmOf(state.hUnit, state.cm, state.ft, state.inch);
@@ -306,7 +318,7 @@
       }
     }
 
-    // Seed defaults
+    // Seed clean, no explanatory text
     recalc();
   </script>
 </body>
