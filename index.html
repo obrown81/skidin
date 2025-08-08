@@ -1,3 +1,316 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>DIN Calculator</title></head>
-<body><p>If you can read this, the file saved correctly. (Full app was provided earlier—let me know if you want that version re-exported now.)</p></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DIN Calculator — Ski‑Pass Cards</title>
+  <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Matches Salomon chart logic." />
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --text:#0f172a;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --field-border:#cbd5e1;
+      --accent-gold:#f59e0b;
+      --accent-blue:#60a5fa;
+      --accent-green:#10b981;
+      --result-green:#16a34a;
+      --muted:#475569;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:920px;
+      margin:0 auto;
+      padding:20px;
+      display:grid;
+      gap:16px;
+    }
+    h1{
+      text-align:center;
+      font-size:26px;
+      font-weight:800;
+      letter-spacing:.3px;
+      margin:6px 0 14px;
+    }
+    .pass{
+      position:relative;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .strap{height:6px;border-radius:8px;margin-bottom:8px}
+    .title{display:flex;justify-content:space-between;align-items:center;color:#334155;font-weight:700;letter-spacing:.6px}
+    .perf{height:10px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:8px 8px;background-position:0 -2px;opacity:.75}
+    .fields{display:flex;flex-direction:column;gap:10px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    select,input{
+      padding:10px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%;
+    }
+    .result{
+      background:var(--result-green);
+      color:#fff;
+      text-align:center;
+      border-radius:14px;
+      padding:22px;
+    }
+    .result h3{margin:0 0 6px;font-size:14px;font-weight:800;letter-spacing:.4px;opacity:.95}
+    .result .value{font-size:56px;line-height:1;font-weight:900}
+    .note{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+    footer{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 30px}
+    a{color:#0ea5e9;text-decoration:none}
+    a:hover{text-decoration:underline}
+    @media (max-width:640px){
+      .grid2{grid-template-columns:1fr}
+      .result .value{font-size:44px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎿 DIN Calculator</h1>
+
+    <!-- Pass 1 — Weight -->
+    <section class="pass" id="pass-weight">
+      <div class="strap" style="background:var(--accent-gold)"></div>
+      <div class="title"><span>WEIGHT</span></div>
+      <div class="perf"></div>
+      <div class="fields">
+        <select id="weightUnit" aria-label="Weight unit">
+          <option value="kg">Kilograms (kg)</option>
+          <option value="lb">Pounds (lb)</option>
+          <option value="st">Stone + lb</option>
+        </select>
+        <div id="weightFields"></div>
+      </div>
+    </section>
+
+    <!-- Pass 2 — Height -->
+    <section class="pass" id="pass-height">
+      <div class="strap" style="background:var(--accent-blue)"></div>
+      <div class="title"><span>HEIGHT</span></div>
+      <div class="perf"></div>
+      <div class="fields">
+        <select id="heightUnit" aria-label="Height unit">
+          <option value="cm">Centimeters (cm)</option>
+          <option value="ft">Feet + Inches</option>
+        </select>
+        <div id="heightFields"></div>
+      </div>
+    </section>
+
+    <!-- Pass 3 — BSL / Age / Type -->
+    <section class="pass" id="pass-misc">
+      <div class="strap" style="background:var(--accent-green)"></div>
+      <div class="title"><span>BSL · AGE · TYPE</span></div>
+      <div class="perf"></div>
+      <div class="fields">
+        <div class="grid2">
+          <input id="bsl" inputmode="numeric" pattern="[0-9]*" placeholder="Boot-sole length (mm)" aria-label="Boot-sole length (mm)">
+          <input id="age" inputmode="numeric" pattern="[0-9]*" placeholder="Age" aria-label="Age">
+        </div>
+        <select id="skierType" aria-label="Skier Type">
+          <option value="0">Type 0 — Very cautious / child</option>
+          <option value="1">Type 1 — Cautious</option>
+          <option value="2" selected>Type 2 — Recreational</option>
+          <option value="3">Type 3 — Aggressive</option>
+          <option value="3+">Type 3+ — Expert / race</option>
+        </select>
+      </div>
+      <div class="note">Auto‑updates. For professional setup & release testing, see ISO‑11088.</div>
+    </section>
+
+    <!-- Result -->
+    <section class="pass">
+      <div class="strap" style="background:var(--accent-green)"></div>
+      <div class="title"><span>RESULT</span></div>
+      <div class="perf"></div>
+      <div class="fields">
+        <div class="result" id="resultBox" hidden>
+          <h3>RECOMMENDED DIN</h3>
+          <div class="value" id="dinValue">—</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      MIT © You • Chart logic adapted to match Salomon/ISO‑11088 ranges. No warranty of fitness for on‑snow use.
+    </footer>
+  </div>
+
+  <script>
+    // ===== Constants (ISO-11088-like) =====
+    const DIN = [
+      [0.75,0.75,0.75,0.75,0.75],[1,0.75,0.75,0.75,0.75],[1.25,1,0.75,0.75,0.75],
+      [1.5,1.25,1,0.75,0.75],[1.75,1.5,1.25,1,0.75],[2,1.75,1.5,1.25,1],
+      [2.5,2,1.75,1.5,1.25],[3,2.5,2,1.75,1.5],[3.5,3,2.5,2,1.75],
+      [4,3.5,3,2.5,2],[4.5,4,3.5,3,2.5],[5,4.5,4,3.5,3],
+      [5.5,5,4.5,4,3.5],[6,5.5,5,4.5,4],[6.5,6,5.5,5,4.5],
+      [7,6.5,6,5.5,5],[8,7.5,7,6.5,6],[9,8.5,8,7.5,7],
+      [10,9.5,9,8.5,8],[11,10.5,10,9.5,9],[12,11.5,11,10.5,10],
+      [13,12.5,12,11.5,11],[14,13.5,13,12.5,12],[15,14.5,14,13.5,13],
+      [16,15.5,15,14.5,14],[17,16.5,16,15.5,15]
+    ];
+    const WEIGHT=[[10,13],[13.1,15],[15.1,17],[17.1,19],[19.1,21],[21.1,24],[24.1,27],[27.1,30],[30.1,34],[34.1,38],[38.1,42],[42.1,48],[48.1,53],[53.1,58],[58.1,63],[63.1,70],[70.1,78],[78.1,87],[87.1,97],[97.1,108],[108.1,120],[120.1,132],[132.1,155],[155.1,180]];
+    const HEIGHT=[[91,100],[101,107],[108,115],[116,122],[123,129],[130,137],[138,146],[147,155],[156,163],[164,170],[171,178],[179,186],[187,194],[195,200],[201,207],[208,214],[215,221],[222,228],[229,235],[236,242],[243,250],[251,260]];
+    const BSL_BREAKS=[291,271,251,231];
+    const TYPE_OFF={"0":-2,"1":-1,"2":0,"3":1,"3+":2};
+
+    // ===== Helpers =====
+    const num = v => { const n = parseFloat(v); return Number.isFinite(n)? n : 0; };
+    const kgOf = (unit,kg,lb,st,slb)=> unit==="kg"?num(kg) : unit==="lb"? num(lb)*0.453592 : (num(st)*14+num(slb))*0.453592;
+    const cmOf = (unit,cm,ft,inch)=> unit==="cm"?num(cm) : num(ft)*30.48 + num(inch)*2.54;
+    const idx = (tbl,v)=> tbl.findIndex(([lo,hi])=> v>=lo && v<=hi);
+    function calcDIN(w,h,age,type,bsl){
+      if(!w||!h||!bsl) return "";
+      const wi=idx(WEIGHT,w), hi=idx(HEIGHT,h);
+      if(wi<0||hi<0) return "Out-of-chart";
+      const diff = Math.max(0, wi - Math.min(hi, HEIGHT.length-1));
+      let code = wi - Math.ceil(diff/2) + (TYPE_OFF[type]||0);
+      if(age<10 || age>=50) code -= 1;
+      code = Math.max(0, Math.min(code, DIN.length-1));
+      const col = BSL_BREAKS.findIndex(b => bsl >= b);
+      const ci = col === -1 ? 4 : col;
+      return DIN[code][ci].toFixed(1);
+    }
+    const fmt1 = x => Number.isFinite(x) ? (Math.round(x*10)/10).toString() : "";
+    const fmt0 = x => Number.isFinite(x) ? Math.round(x).toString() : "";
+
+    // ===== DOM =====
+    const weightUnit = document.getElementById('weightUnit');
+    const weightFields = document.getElementById('weightFields');
+    const heightUnit = document.getElementById('heightUnit');
+    const heightFields = document.getElementById('heightFields');
+    const bsl = document.getElementById('bsl');
+    const age = document.getElementById('age');
+    const skierType = document.getElementById('skierType');
+    const resultBox = document.getElementById('resultBox');
+    const dinValue = document.getElementById('dinValue');
+
+    // ===== Inputs state (shadow model) =====
+    const state = {
+      wUnit:'kg', kg:'', lb:'', st:'', stlb:'',
+      hUnit:'cm', cm:'', ft:'', inch:'',
+    };
+
+    function renderWeightFields(){
+      weightFields.innerHTML = '';
+      if(state.wUnit==='kg'){
+        const i = document.createElement('input');
+        i.placeholder='kg'; i.inputMode='decimal'; i.value=state.kg;
+        i.addEventListener('input', e=>{ state.kg=e.target.value; recalc(); });
+        weightFields.appendChild(i);
+      }else if(state.wUnit==='lb'){
+        const i = document.createElement('input');
+        i.placeholder='lb'; i.inputMode='decimal'; i.value=state.lb;
+        i.addEventListener('input', e=>{ state.lb=e.target.value; recalc(); });
+        weightFields.appendChild(i);
+      }else{
+        const g = document.createElement('div'); g.className='grid2';
+        const a = document.createElement('input'); a.placeholder='st'; a.inputMode='numeric'; a.pattern='[0-9]*'; a.value=state.st;
+        const b = document.createElement('input'); b.placeholder='lb'; b.inputMode='numeric'; b.pattern='[0-9]*'; b.value=state.stlb;
+        a.addEventListener('input', e=>{ state.st=e.target.value; recalc(); });
+        b.addEventListener('input', e=>{ state.stlb=e.target.value; recalc(); });
+        g.append(a,b); weightFields.appendChild(g);
+      }
+    }
+    function renderHeightFields(){
+      heightFields.innerHTML = '';
+      if(state.hUnit==='cm'){
+        const i = document.createElement('input');
+        i.placeholder='cm'; i.inputMode='decimal'; i.value=state.cm;
+        i.addEventListener('input', e=>{ state.cm=e.target.value; recalc(); });
+        heightFields.appendChild(i);
+      }else{
+        const g = document.createElement('div'); g.className='grid2';
+        const f = document.createElement('input'); f.placeholder='ft'; f.inputMode='numeric'; f.pattern='[0-9]*'; f.value=state.ft;
+        const inch = document.createElement('input'); inch.placeholder='in'; inch.inputMode='numeric'; inch.pattern='[0-9]*'; inch.value=state.inch;
+        f.addEventListener('input', e=>{ state.ft=e.target.value; recalc(); });
+        inch.addEventListener('input', e=>{ state.inch=e.target.value; recalc(); });
+        g.append(f,inch); heightFields.appendChild(g);
+      }
+    }
+
+    // ===== Convert & keep values on unit change =====
+    function convertWeight(next){
+      const wkg = kgOf(state.wUnit, state.kg, state.lb, state.st, state.stlb);
+      state.wUnit = next;
+      if(!wkg){ renderWeightFields(); return; }
+      const lbs = wkg / 0.45359237;
+      if(next==='kg'){
+        state.kg = fmt1(wkg);
+      }else if(next==='lb'){
+        state.lb = fmt1(lbs);
+        const st = Math.floor(lbs/14);
+        let l = Math.round(lbs - st*14); if(l===14){ l=0; }
+        state.st = st.toString(); state.stlb = l.toString();
+      }else{ // st
+        const st = Math.floor(lbs/14);
+        let l = Math.round(lbs - st*14); if(l===14){ l=0; }
+        state.st = st.toString(); state.stlb = l.toString();
+        state.lb = fmt1(lbs);
+      }
+      renderWeightFields(); recalc();
+    }
+    function convertHeight(next){
+      const hcm = cmOf(state.hUnit, state.cm, state.ft, state.inch);
+      state.hUnit = next;
+      if(!hcm){ renderHeightFields(); return; }
+      if(next==='cm'){
+        state.cm = fmt0(hcm);
+      }else{
+        const totalIn = hcm / 2.54;
+        let ft = Math.floor(totalIn/12);
+        let i = Math.round(totalIn - ft*12);
+        if(i===12){ ft+=1; i=0; }
+        state.ft = ft.toString(); state.inch = i.toString();
+      }
+      renderHeightFields(); recalc();
+    }
+
+    weightUnit.addEventListener('change', e=> convertWeight(e.target.value));
+    heightUnit.addEventListener('change', e=> convertHeight(e.target.value));
+
+    // Initial renders
+    renderWeightFields(); renderHeightFields();
+
+    // Hook misc inputs
+    bsl.addEventListener('input', recalc);
+    age.addEventListener('input', recalc);
+    skierType.addEventListener('change', recalc);
+
+    // ===== Recalc =====
+    function recalc(){
+      const w = kgOf(state.wUnit, state.kg, state.lb, state.st, state.stlb);
+      const h = cmOf(state.hUnit, state.cm, state.ft, state.inch);
+      const a = age.value.trim()? parseInt(age.value,10): 30;
+      const b = num(bsl.value);
+      const t = skierType.value;
+      const din = calcDIN(w,h,a,t,b);
+      if(din){
+        dinValue.textContent = din;
+        resultBox.hidden = false;
+      }else{
+        resultBox.hidden = true;
+      }
+    }
+
+    // Prefill some sensible defaults for quick sanity test (you can remove)
+    (function seed(){
+      state.kg = '140'; state.cm = '182'; bsl.value = '328'; age.value='30'; skierType.value='3+';
+      renderWeightFields(); renderHeightFields(); recalc();
+    })();
+  </script>
+</body>
+</html>
