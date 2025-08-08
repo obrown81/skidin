@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DIN Calculator — Ski‑Pass Cards</title>
-  <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Matches Salomon chart logic." />
+  <title>DIN Calculator — Ski-Pass Cards</title>
+  <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Defaults set to UK male averages (approx age 30)." />
   <style>
     :root{
       --bg:#f8fafc;
@@ -25,56 +25,22 @@
       background:var(--bg);
       color:var(--text);
     }
-    .wrap{
-      max-width:920px;
-      margin:0 auto;
-      padding:20px;
-      display:grid;
-      gap:16px;
-    }
-    h1{
-      text-align:center;
-      font-size:26px;
-      font-weight:800;
-      letter-spacing:.3px;
-      margin:6px 0 14px;
-    }
-    .pass{
-      position:relative;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:20px;
-      padding:16px;
-      box-shadow:0 6px 20px rgba(0,0,0,.06);
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+    .wrap{max-width:920px;margin:0 auto;padding:20px;display:grid;gap:16px}
+    h1{text-align:center;font-size:26px;font-weight:800;letter-spacing:.3px;margin:6px 0 14px}
+    .pass{position:relative;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:12px}
     .strap{height:6px;border-radius:8px;margin-bottom:8px}
     .title{display:flex;justify-content:space-between;align-items:center;color:#334155;font-weight:700;letter-spacing:.6px}
     .perf{height:10px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:8px 8px;background-position:0 -2px;opacity:.75}
     .fields{display:flex;flex-direction:column;gap:10px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    select,input{
-      padding:10px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%;
-    }
-    .result{
-      background:var(--result-green);
-      color:#fff;
-      text-align:center;
-      border-radius:14px;
-      padding:22px;
-    }
+    select,input{padding:10px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%}
+    .result{background:var(--result-green);color:#fff;text-align:center;border-radius:14px;padding:22px}
     .result h3{margin:0 0 6px;font-size:14px;font-weight:800;letter-spacing:.4px;opacity:.95}
     .result .value{font-size:56px;line-height:1;font-weight:900}
     .note{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
     footer{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 30px}
-    a{color:#0ea5e9;text-decoration:none}
-    a:hover{text-decoration:underline}
-    @media (max-width:640px){
-      .grid2{grid-template-columns:1fr}
-      .result .value{font-size:44px}
-    }
+    a{color:#0ea5e9;text-decoration:none} a:hover{text-decoration:underline}
+    @media (max-width:640px){.grid2{grid-template-columns:1fr}.result .value{font-size:44px}}
   </style>
 </head>
 <body>
@@ -128,7 +94,7 @@
           <option value="3+">Type 3+ — Expert / race</option>
         </select>
       </div>
-      <div class="note">Auto‑updates. For professional setup & release testing, see ISO‑11088.</div>
+      <div class="note">Defaults use UK male averages (HSE 2019). Auto-updates as you type.</div>
     </section>
 
     <!-- Result -->
@@ -145,7 +111,7 @@
     </section>
 
     <footer>
-      MIT © You • Chart logic adapted to match Salomon/ISO‑11088 ranges. No warranty of fitness for on‑snow use.
+      MIT © You • Chart logic adapted to match Salomon/ISO-11088 ranges. Defaults: 85.4 kg, 175.5 cm, age 30 (HSE 2019).
     </footer>
   </div>
 
@@ -306,9 +272,14 @@
       }
     }
 
-    // Prefill some sensible defaults for quick sanity test (you can remove)
-    (function seed(){
-      state.kg = '140'; state.cm = '182'; bsl.value = '328'; age.value='30'; skierType.value='3+';
+    // ===== Prefill defaults: UK male averages (approx age 30) =====
+    (function seedUK(){
+      // HSE 2019 measured means: height 175.5 cm; weight 85.4 kg.
+      state.kg = '85.4';
+      state.cm = '175.5';
+      age.value = '30';
+      // Keep BSL empty so you can enter your own; uncomment to preset:
+      // bsl.value = '328';
       renderWeightFields(); renderHeightFields(); recalc();
     })();
   </script>
