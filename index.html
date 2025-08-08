@@ -2,10 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>DIN Calculator — Ski-Pass Cards</title>
   <meta name="description" content="ISO DIN calculator with metric/imperial units, stone+lb, cm or ft/inches, skier types including 3+, and BSL. Defaults set to UK male averages (approx age 30)." />
   <style>
+    /* ===== iOS: avoid zoom-on-focus & improve touch ===== */
+    html { -webkit-text-size-adjust: 100%; }
+    body { -webkit-tap-highlight-color: rgba(0,0,0,0); }
+    /* Force >=16px font-size on inputs to stop iOS Safari zoom */
+    input, select, textarea { font-size: 16px; line-height: 1.35; }
+    /* Comfortable touch targets */
+    input, select, button { min-height: 48px; }
+
     :root{
       --bg:#f8fafc;
       --text:#0f172a;
@@ -33,14 +41,31 @@
     .perf{height:10px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:8px 8px;background-position:0 -2px;opacity:.75}
     .fields{display:flex;flex-direction:column;gap:10px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    select,input{padding:10px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%}
-    .result{background:var(--result-green);color:#fff;text-align:center;border-radius:14px;padding:22px}
+    select,input{
+      padding:12px;border-radius:10px;background:#fff;border:1px solid var(--field-border);color:var(--text);width:100%;
+    }
+    select:focus,input:focus{outline:3px solid #bae6fd; outline-offset: 1px;}
+    .result{
+      background:var(--result-green);
+      color:#fff;
+      text-align:center;
+      border-radius:14px;
+      padding:22px;
+    }
     .result h3{margin:0 0 6px;font-size:14px;font-weight:800;letter-spacing:.4px;opacity:.95}
     .result .value{font-size:56px;line-height:1;font-weight:900}
     .note{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+
+    /* Sticky DIN on small screens for better feedback */
+    .sticky-wrap{position:sticky; bottom:12px; z-index:5}
+
     footer{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 30px}
     a{color:#0ea5e9;text-decoration:none} a:hover{text-decoration:underline}
-    @media (max-width:640px){.grid2{grid-template-columns:1fr}.result .value{font-size:44px}}
+    @media (max-width:640px){
+      .grid2{grid-template-columns:1fr}
+      .result .value{font-size:44px}
+      .wrap{padding:14px; gap:12px}
+    }
   </style>
 </head>
 <body>
@@ -94,11 +119,11 @@
           <option value="3+">Type 3+ — Expert / race</option>
         </select>
       </div>
-      <div class="note">Defaults use UK male averages (HSE 2019). Auto-updates as you type.</div>
+      <div class="note">Defaults use UK male averages (2019): 85.4 kg, 175.5 cm. Auto-updates as you type.</div>
     </section>
 
-    <!-- Result -->
-    <section class="pass">
+    <!-- Result (sticky wrapper improves mobile feedback) -->
+    <section class="pass sticky-wrap">
       <div class="strap" style="background:var(--accent-green)"></div>
       <div class="title"><span>RESULT</span></div>
       <div class="perf"></div>
@@ -111,7 +136,7 @@
     </section>
 
     <footer>
-      MIT © You • Chart logic adapted to match Salomon/ISO-11088 ranges. Defaults: 85.4 kg, 175.5 cm, age 30 (HSE 2019).
+      MIT © You • Chart logic adapted to match Salomon/ISO-11088 ranges. Defaults: 85.4 kg, 175.5 cm, age 30.
     </footer>
   </div>
 
@@ -166,8 +191,8 @@
 
     // ===== Inputs state (shadow model) =====
     const state = {
-      wUnit:'kg', kg:'', lb:'', st:'', stlb:'',
-      hUnit:'cm', cm:'', ft:'', inch:'',
+      wUnit:'kg', kg:'85.4', lb:'', st:'', stlb:'',
+      hUnit:'cm', cm:'175.5', ft:'', inch:'',
     };
 
     function renderWeightFields(){
@@ -272,16 +297,8 @@
       }
     }
 
-    // ===== Prefill defaults: UK male averages (approx age 30) =====
-    (function seedUK(){
-      // HSE 2019 measured means: height 175.5 cm; weight 85.4 kg.
-      state.kg = '85.4';
-      state.cm = '175.5';
-      age.value = '30';
-      // Keep BSL empty so you can enter your own; uncomment to preset:
-      // bsl.value = '328';
-      renderWeightFields(); renderHeightFields(); recalc();
-    })();
+    // Seed defaults
+    recalc();
   </script>
 </body>
 </html>
